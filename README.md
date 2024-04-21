@@ -1,6 +1,11 @@
 # cliAlgoTool
 This can have a couple of solutions and I will choose 1 to showcase my ability.
 
+## considerations
+We need to normalize the data in some way, the sorting algorithm of golang will perform a lexicographically ordering and because the data of the column we need to sort contains numbers like
+"9" and "10", it will consider 10 smaller than 9 because it starts with a "1".
+We either add the necessary "0" to the numbers of 1 digit or compare the chars first and numbers second after converting to ints.
+(first me agrega n, sec me agrega 2 nlogn) 
 approaches
 1. use built in sort(quicksort) algo from golang with custom sort - is an optimized version of quicksort
 
@@ -23,3 +28,10 @@ hubo una implementacion dando vueltas que era mas rapido que la version anterior
 
 decisiones:
 - creo que voy a hacer mi imple de QS solo para hacer showcase y si me queda tiempo implementar la de golang para tirar un benchmark (porque no estoy segura como implmentar dentro de la libreria de golang- me tomara mas tiempoy no se si llego a algun lado, el otro si me deja llegar a algun lado)
+
+## How to run it
+- 
+
+
+enc := make([]byte, 256)
+		return hex.Encode(enc, byte(bays[i])) < hex.Encode(enc, byte(bays[j]))
