@@ -78,7 +78,7 @@ func parseCliOptions() (string, string, bool, error) {
 }
 
 func main() {
-	inputFileName, outputFileName, printToStdout, err := parseCliOptions()
+	inputFileName, _, _, err := parseCliOptions()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,40 +94,76 @@ func main() {
 
 	// Parse the input CSV file
 	reader := csv.NewReader(openInputFile)
-	records, err := reader.ReadAll()
+	_, err = reader.ReadAll()
 	if err != nil {
 		log.Fatalf("Reader failed:%v", err)
 		return
 	}
 
-	locationColumnIdx, err := getColumnIndex(records[0], "pick_location")
+	//	locationColumnIdx, err := getColumnIndex(records[0], "pick_location")
+	//	if err != nil {
+	//		log.Fatalf("getColumnIndex failed:%v", err)
+	//		return
+	//	}
+	//
+	//	quantityColumnIdx, err := getColumnIndex(records[0], "quantity")
+	//	if err != nil {
+	//		log.Fatalf("getColumnIndex failed:%v", err)
+	//		return
+	//	}
+	//
+	//	// call module that processes CSV
+	//	customsort.SortByColumnIdx(locationColumnIdx, records[1:])
+	//
+	//	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records, 1)
+	//	if err != nil {
+	//		log.Fatalf("Failed to merge duplicates")
+	//	}
+	//
+	//	if err = saveToFile(outputFileName, results); err != nil {
+	//		log.Fatalf("Failed to save results")
+	//	}
+	//	log.Infof("Successfully saved results to file %v", outputFileName)
+	//
+	//	if printToStdout {
+	//		for _, result := range results {
+	//			fmt.Printf("%+q\n", result)
+	//		}
+	//	}
+
+	// New version
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Infof("Reading from file %v", inputFileName)
+	// Read input CSV file
+	openInputFile, err = os.Open(inputFileName)
 	if err != nil {
-		log.Fatalf("getColumnIndex failed:%v", err)
+		log.Fatalf("OS open failed:%v", err)
 		return
 	}
+	defer openInputFile.Close()
 
-	quantityColumnIdx, err := getColumnIndex(records[0], "quantity")
+	reader = csv.NewReader(openInputFile)
+	reader.FieldsPerRecord = 3
+	data, err := customsort.FindOptimalPath(reader, 1)
 	if err != nil {
-		log.Fatalf("getColumnIndex failed:%v", err)
-		return
+		log.Fatalf(err.Error())
 	}
 
-	// call module that processes CSV
-	customsort.SortByColumnIdx(locationColumnIdx, records[1:])
-
-	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records, 1)
-	if err != nil {
-		log.Fatalf("Failed to merge duplicates")
+	for _, key := range data.GetOrder() {
+		fmt.Printf("%+q\n", data.Values[key])
 	}
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
+	log.Info("-----------------")
 
-	if err = saveToFile(outputFileName, results); err != nil {
-		log.Fatalf("Failed to save results")
-	}
-	log.Infof("Successfully saved results to file %v", outputFileName)
-
-	if printToStdout {
-		for _, result := range results {
-			fmt.Printf("%+q\n", result)
-		}
-	}
 }

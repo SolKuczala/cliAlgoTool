@@ -1,6 +1,10 @@
 package customsort
 
 import (
+	"clialgotool/utils"
+	"encoding/csv"
+	"fmt"
+	"io"
 	"sort"
 	"strconv"
 	"strings"
@@ -105,3 +109,80 @@ func MergeDuplicatesAsSums(keyColumnIdx int, sumColumnIdx int, input [][]string,
 // 	quicksort(arr, lo, idx-1)
 // 	quicksort(arr, idx+1, hi)
 // }
+
+func normalizeProductCode(productCode string) string {
+	if len(productCode) < 6 {
+		// add leading zeros to product code until it's 6 characters long
+		return strings.Repeat("0", 6-len(productCode)) + productCode
+	}
+	return productCode
+}
+
+func normalizeLocation(location string) string {
+	if len(location) < 5 {
+		locationSplit := strings.Split(location, " ")
+		if len(locationSplit[0]) < 2 {
+			// add leading spaces to location until it's 2 characters long
+			locationSplit[0] = strings.Repeat(" ", 2-len(locationSplit[0])) + locationSplit[0]
+		}
+		if len(locationSplit[1]) < 2 {
+			// add leading zeros to location until it's 2 characters long
+			locationSplit[1] = strings.Repeat("0", 2-len(locationSplit[1])) + locationSplit[1]
+		}
+		return locationSplit[0] + locationSplit[1]
+	}
+	return location
+}
+
+func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
+	productCodeCol := 0
+	quantityCol := 1
+	locationCol := 2
+
+	// key = normalized location and product code, value = quantity
+	// this map will contain the deduplicated rows with the total sum of quantities for each unique location and product code
+	// order will contain the keys of the results map in sorted order
+	results := utils.OrderAwareMap{
+		Values: make(map[string]utils.CSVRow),
+	}
+
+	index := 0
+	for {
+		row, err := input.Read()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return results, err
+		}
+		index++
+
+		if index <= skip {
+			// skip the first X rows (headers)
+			fmt.Printf("Skipping row: %v\n", row)
+			continue
+		}
+
+		normalizedProductCode := normalizeProductCode(row[productCodeCol])
+		normalizedLocation := normalizeLocation(row[locationCol])
+		key := normalizedLocation + normalizedProductCode
+
+		quantity, err := strconv.Atoi(row[quantityCol])
+		if err != nil {
+			return results, err
+		}
+		if val, ok := results.Values[key]; ok {
+			val.Quantity = val.Quantity + quantity
+			results.Values[key] = val
+		} else {
+			results.Values[key] = utils.CSVRow{
+				ProductCode:  row[productCodeCol],
+				Quantity:     quantity,
+				PickLocation: row[locationCol],
+			}
+		}
+	}
+
+	results.SortKeys()
+	return results, nil
+}
