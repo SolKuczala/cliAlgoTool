@@ -29,30 +29,63 @@ func getColumnIndex(header []string, columnName string) (int, error) {
 	return -1, fmt.Errorf("column not found")
 }
 
-func main() {
+func saveToFile(filename string, records [][]string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Fatalf("Failed to create file:%v", err)
+		return err
+	}
+	defer file.Close()
+
+	// Write the processed records to the output CSV file
+	writer := csv.NewWriter(file)
+	err = writer.WriteAll(records)
+	if err != nil {
+		log.Fatalf("Failed to write:%v", err)
+		return err
+	}
+	return nil
+}
+
+func parseCliOptions() (string, string, bool, error) {
 	// create CLI
 	// Define command-line flags
 	log.Info("Initializing cli tool")
-	inputFile := flag.String("input", "", "Input CSV file")
-	outputFile := flag.String("output", "", "Output CSV file")
-	printToStdout := flag.Bool("print", false, "Print the output CSV file to stdout")
+	inputFlag := flag.String("input", "", "Input CSV file")
+	outputFlag := flag.String("output", "", "Output CSV file")
+	printFlag := flag.Bool("print", false, "Print the output CSV file to stdout")
 	flag.Parse()
 
 	// Check if input file is provided
-	if *inputFile == "" {
-		log.Fatalf("Please provide input CSV file using -input flag")
-		return
+	if *inputFlag == "" {
+		return "", "", false, fmt.Errorf("Please provide input CSV file using -input flag")
 	}
+	inputFileName := *inputFlag
+	outputFileName := *outputFlag
+	printToStdout := *printFlag
+
 	// Set the default output filename if not provided
-	if *outputFile == "" {
-		inputFileName := strings.TrimSuffix(filepath.Base(*inputFile), filepath.Ext(*inputFile))
-		*outputFile = inputFileName + "_output.csv"
+	if outputFileName == "" {
+		absInputFilePath, err := filepath.Abs(inputFileName)
+		if err != nil {
+			return "", "", false, fmt.Errorf("Failed to determine output file path:%v", err)
+		}
+		inputFilePath := strings.TrimSuffix(absInputFilePath, filepath.Ext(inputFileName))
+		outputFileName = inputFilePath + "_output.csv"
 	}
 
-	log.Infof("Reading file %v", *inputFile)
+	return inputFileName, outputFileName, printToStdout, nil
+}
 
+func main() {
+	inputFileName, outputFileName, printToStdout, err := parseCliOptions()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Infof("Reading from file %v", inputFileName)
 	// Read input CSV file
-	openInputFile, err := os.Open(*inputFile)
+	openInputFile, err := os.Open(inputFileName)
 	if err != nil {
 		log.Fatalf("OS open failed:%v", err)
 		return
@@ -76,24 +109,12 @@ func main() {
 	// call module that processes CSV
 	customsort.SortCSVbyColumnIdx(columnIdx, records[1:])
 
-	// Create the output CSV file
-	newCSV, err := os.Create(*outputFile)
-	if err != nil {
-		log.Fatalf("OS create failed:%v", err)
-		return
+	if err = saveToFile(outputFileName, records); err != nil {
+		log.Fatalf("Failed to save results")
 	}
-	defer newCSV.Close()
+	log.Infof("Successfully saved results to file %v", outputFileName)
 
-	// Write the processed records to the output CSV file
-	writer := csv.NewWriter(newCSV)
-	err = writer.WriteAll(records)
-	if err != nil {
-		log.Fatalf("Writer failed:%v", err)
-		return
-	}
-	log.Infof("Successfully written to file %v", *outputFile)
-
-	if *printToStdout {
+	if printToStdout {
 		for _, record := range records {
 			fmt.Printf("%+q\n", record)
 		}
