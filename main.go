@@ -115,7 +115,7 @@ func main() {
 	// call module that processes CSV
 	customsort.SortByColumnIdx(locationColumnIdx, records[1:])
 
-	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records[1:])
+	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records, 1)
 	if err != nil {
 		log.Fatalf("Failed to merge duplicates")
 	}

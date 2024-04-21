@@ -37,35 +37,39 @@ func SortByColumnIdx(column int, matrix [][]string) {
 	})
 }
 
-func MergeDuplicatesAsSums(keyColumnIdx int, sumColumnIdx int, input [][]string) ([][]string, error) {
+func MergeDuplicatesAsSums(keyColumnIdx int, sumColumnIdx int, input [][]string, skip int) ([][]string, error) {
 	results := [][]string{}
 
 	if len(input) == 0 {
 		return results, nil
 	}
 
-	results = append(results, input[0])
-	resultsIdx := 0
+	// skip head rows
+	for i := 0; i < skip; i++ {
+		results = append(results, input[i])
+	}
 
-	for i := 1; i < len(input); i++ {
+	// set initial value to compare against
+	results = append(results, input[skip])
+
+	for i := skip + 1; i < len(input); i++ {
 		inputRow := input[i]
 		inputKeyValue := inputRow[keyColumnIdx]
-		resultsKeyValue := results[resultsIdx][keyColumnIdx]
+		resultsKeyValue := results[len(results)-1][keyColumnIdx]
 		if inputKeyValue == resultsKeyValue {
 			inputQuantity, err := strconv.Atoi(inputRow[sumColumnIdx])
 			if err != nil {
 				return results, err
 			}
 
-			resultsQuantity, err := strconv.Atoi(results[resultsIdx][sumColumnIdx])
+			resultsQuantity, err := strconv.Atoi(results[len(results)-1][sumColumnIdx])
 			if err != nil {
 				return results, err
 			}
 
-			results[resultsIdx][sumColumnIdx] = strconv.Itoa(resultsQuantity + inputQuantity)
+			results[len(results)-1][sumColumnIdx] = strconv.Itoa(resultsQuantity + inputQuantity)
 		} else {
 			results = append(results, inputRow)
-			resultsIdx++
 		}
 	}
 	return results, nil
