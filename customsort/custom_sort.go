@@ -1,13 +1,13 @@
-package customAlgo
+package customsort
 
 import (
 	"sort"
 	"strings"
 )
 
-// order the chars first and if duplicate, compare the number
-func OrderCSVbyColumnIdx(column int, matrix [][]string) {
-	// order chars first and numbers second
+// sort the chars first and if duplicate, compare the number
+func SortCSVbyColumnIdx(column int, matrix [][]string) {
+	// sort chars first and numbers second
 	sort.Slice(matrix, func(i, j int) bool {
 		// extract chars
 		charI := strings.Split(matrix[i][column], " ")
@@ -15,9 +15,9 @@ func OrderCSVbyColumnIdx(column int, matrix [][]string) {
 
 		// if chars are equal
 		if charI[0] == charJ[0] {
-			// sort  by ints
+			// sort by ints
 			if len(charI[1]) != len(charJ[1]) {
-				// add 0
+				// normalize: add 0
 				if len(charI[1]) < len(charJ[1]) {
 					charI[1] = "0" + charI[1]
 				} else {

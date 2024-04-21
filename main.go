@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"clialgotool/customAlgo"
+	"clialgotool/customsort"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -32,8 +32,10 @@ func getColumnIndex(header []string, columnName string) (int, error) {
 func main() {
 	// create CLI
 	// Define command-line flags
+	log.Info("Initializing cli tool")
 	inputFile := flag.String("input", "", "Input CSV file")
 	outputFile := flag.String("output", "", "Output CSV file")
+	printToStdout := flag.Bool("print", false, "Print the output CSV file to stdout")
 	flag.Parse()
 
 	// Check if input file is provided
@@ -46,6 +48,8 @@ func main() {
 		inputFileName := strings.TrimSuffix(filepath.Base(*inputFile), filepath.Ext(*inputFile))
 		*outputFile = inputFileName + "_output.csv"
 	}
+
+	log.Infof("Reading file %v", *inputFile)
 
 	// Read input CSV file
 	openInputFile, err := os.Open(*inputFile)
@@ -70,7 +74,7 @@ func main() {
 	}
 
 	// call module that processes CSV
-	customAlgo.OrderCSVbyColumnIdx(columnIdx, records[1:])
+	customsort.SortCSVbyColumnIdx(columnIdx, records[1:])
 
 	// Create the output CSV file
 	newCSV, err := os.Create(*outputFile)
@@ -86,5 +90,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Writer failed:%v", err)
 		return
+	}
+	log.Infof("Successfully written to file %v", *outputFile)
+
+	if *printToStdout {
+		for _, record := range records {
+			fmt.Printf("%+q\n", record)
+		}
 	}
 }
