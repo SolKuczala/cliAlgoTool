@@ -2,11 +2,12 @@ package customsort
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 )
 
 // sort the chars first and if duplicate, compare the number
-func SortCSVbyColumnIdx(column int, matrix [][]string) {
+func SortByColumnIdx(column int, matrix [][]string) {
 	// sort chars first and numbers second
 	sort.Slice(matrix, func(i, j int) bool {
 		// extract chars
@@ -34,6 +35,40 @@ func SortCSVbyColumnIdx(column int, matrix [][]string) {
 			return len(charI[0]) < len(charJ[0])
 		}
 	})
+}
+
+func MergeDuplicatesAsSums(keyColumnIdx int, sumColumnIdx int, input [][]string) ([][]string, error) {
+	results := [][]string{}
+
+	if len(input) == 0 {
+		return results, nil
+	}
+
+	results = append(results, input[0])
+	resultsIdx := 0
+
+	for i := 1; i < len(input); i++ {
+		inputRow := input[i]
+		inputKeyValue := inputRow[keyColumnIdx]
+		resultsKeyValue := results[resultsIdx][keyColumnIdx]
+		if inputKeyValue == resultsKeyValue {
+			inputQuantity, err := strconv.Atoi(inputRow[sumColumnIdx])
+			if err != nil {
+				return results, err
+			}
+
+			resultsQuantity, err := strconv.Atoi(results[resultsIdx][sumColumnIdx])
+			if err != nil {
+				return results, err
+			}
+
+			results[resultsIdx][sumColumnIdx] = strconv.Itoa(resultsQuantity + inputQuantity)
+		} else {
+			results = append(results, inputRow)
+			resultsIdx++
+		}
+	}
+	return results, nil
 }
 
 // // / my custom qs

@@ -100,23 +100,34 @@ func main() {
 		return
 	}
 
-	columnIdx, err := getColumnIndex(records[0], "pick_location")
+	locationColumnIdx, err := getColumnIndex(records[0], "pick_location")
+	if err != nil {
+		log.Fatalf("getColumnIndex failed:%v", err)
+		return
+	}
+
+	quantityColumnIdx, err := getColumnIndex(records[0], "quantity")
 	if err != nil {
 		log.Fatalf("getColumnIndex failed:%v", err)
 		return
 	}
 
 	// call module that processes CSV
-	customsort.SortCSVbyColumnIdx(columnIdx, records[1:])
+	customsort.SortByColumnIdx(locationColumnIdx, records[1:])
 
-	if err = saveToFile(outputFileName, records); err != nil {
+	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records[1:])
+	if err != nil {
+		log.Fatalf("Failed to merge duplicates")
+	}
+
+	if err = saveToFile(outputFileName, results); err != nil {
 		log.Fatalf("Failed to save results")
 	}
 	log.Infof("Successfully saved results to file %v", outputFileName)
 
 	if printToStdout {
-		for _, record := range records {
-			fmt.Printf("%+q\n", record)
+		for _, result := range results {
+			fmt.Printf("%+q\n", result)
 		}
 	}
 }

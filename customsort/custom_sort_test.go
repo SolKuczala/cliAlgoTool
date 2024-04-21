@@ -90,7 +90,7 @@ func TestSort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SortCSVbyColumnIdx(tt.args.column, tt.args.matrix)
+			SortByColumnIdx(tt.args.column, tt.args.matrix)
 
 			if reflect.DeepEqual(tt.want, tt.args.matrix) == false {
 				t.Errorf("got %v, want %v", tt.args.matrix, tt.want)
