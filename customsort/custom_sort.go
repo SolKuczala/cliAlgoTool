@@ -9,36 +9,14 @@ import (
 	"strings"
 )
 
-// // sort the chars first and if duplicate, compare the number
-// func SortByColumnIdx(column int, matrix [][]string) {
-// 	// sort chars first and numbers second
-// 	sort.Slice(matrix, func(i, j int) bool {
-// 		// extract chars
-// 		charI := strings.Split(matrix[i][column], " ")
-// 		charJ := strings.Split(matrix[j][column], " ")
-
-// 		// if chars are equal
-// 		if charI[0] == charJ[0] {
-// 			// sort by ints
-// 			if len(charI[1]) != len(charJ[1]) {
-// 				// normalize: add 0
-// 				if len(charI[1]) < len(charJ[1]) {
-// 					charI[1] = "0" + charI[1]
-// 				} else {
-// 					charJ[1] = "0" + charJ[1]
-// 				}
-// 				return charI[1] < charJ[1]
-// 			}
-// 			return charI[1] < charJ[1]
-
-// 		}
-// 		if len(charI[0]) == len(charJ[0]) {
-// 			return charI[0] < charJ[0]
-// 		} else {
-// 			return len(charI[0]) < len(charJ[0])
-// 		}
-// 	})
-// }
+const (
+	// ProductCodeCol is the column index of the product code
+	productCode = "product_code"
+	// QuantityCol is the column index of the quantity
+	quantity = "quantity"
+	// LocationCol is the column index of the location
+	pickLocation = "pick_location"
+)
 
 // Normalize product code to 6 characters to separate codes at combination key
 func normalizeProductCode(productCode string) string {
@@ -83,10 +61,10 @@ func normalizeLine(line []string) {
 // FindOptimalPath reads the input CSV file and returns a map with the optimal path,
 // the order and the headers of the CSV file in the OrderAwareMap struct.
 func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
-	// TODO: tendria que leer las columnas para determinar sus indices
-	productCodeCol := 0
-	quantityCol := 1
-	locationCol := 2
+	// we are assuming that the input CSV file has the following columns:
+	var productCodeCol int
+	var quantityCol int
+	var locationCol int
 
 	// key = normalized location and product code, value = quantity
 	// this map will contain the deduplicated rows with the total sum of quantities for
@@ -109,12 +87,24 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 		index++
 		if index <= skip {
 			results.SetHeader(row)
+
+			for i, col := range row {
+				if col == productCode {
+					productCodeCol = i
+				}
+				if col == quantity {
+					quantityCol = i
+				}
+				if col == pickLocation {
+					locationCol = i
+				}
+			}
 			fmt.Printf("Skipping row: %+q\n", row)
 			// skip the first X rows (headers)
 			continue
 		}
 
-		// normalize product code and location
+		// normalize product code and location to create key
 		normalizedProductCode := normalizeProductCode(row[productCodeCol])
 		normalizedLocation := normalizeLocation(row[locationCol])
 		combinedKey := normalizedLocation + normalizedProductCode
@@ -125,10 +115,9 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 			return results, fmt.Errorf("findOptimalPath failed: %v", err)
 		}
 		// if the key already exists, add the quantity to the existing value
-		// and update row.
+		// and update row. Otherwise, create a new row.
 		if val, ok := results.CSVdata[combinedKey]; ok {
-			// TODO: try val.Quantity += quantity?
-			val.Quantity = val.Quantity + quantity
+			val.Quantity += quantity
 			results.CSVdata[combinedKey] = val
 		} else {
 			results.CSVdata[combinedKey] = utils.CSVRow{

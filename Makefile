@@ -13,6 +13,6 @@ test-local-integration: build-local
 	diff ./integration/expected_output.csv ./integration/testrun_output.csv
 	rm ./integration/testrun_output.csv
 
-run-docker:
+run-docker-test:
 	docker build . -t test
 	docker run --rm test
