@@ -7,6 +7,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -18,17 +20,17 @@ const (
 	pickLocation = "pick_location"
 )
 
-// Normalize product code to 6 characters to separate codes at combination key
+// normalizeProductCode add leading spaces to product code to 6 characters long
+// in order to be comparable.
 func normalizeProductCode(productCode string) string {
 	if len(productCode) < 6 {
-		// add leading zeros to product code until it's 6 characters long
 		return strings.Repeat("0", 6-len(productCode)) + productCode
 	}
 	return productCode
 }
 
-// Normalize location to 4 characters to separate locations at combination key.
-func normalizeLocation(location string) string {
+// normalizePickLocation to 4 characters to be able to separate locations at combination key.
+func normalizePickLocation(location string) string {
 	if len(location) < 6 {
 		locationSplit := strings.Split(location, " ")
 		for i, loc := range locationSplit {
@@ -51,7 +53,6 @@ func normalizeLocation(location string) string {
 
 // normalizeLine the row line by trimming whitespace from each field
 func normalizeLine(line []string) {
-	// Trim whitespace from each field
 	for i := range line {
 		line[i] = strings.TrimSpace(line[i])
 	}
@@ -99,15 +100,15 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 					locationCol = i
 				}
 			}
-			// TODO: pass logger in
-			fmt.Printf("Skipping row: %+q\n", row)
-			// skip the first X rows (headers)
+
+			// and skip the first X rows (headers)
+			log.Infof("Skipping row: %+q\n", row)
 			continue
 		}
 
 		// normalize product code and location to create key
 		normalizedProductCode := normalizeProductCode(row[productCodeCol])
-		normalizedLocation := normalizeLocation(row[locationCol])
+		normalizedLocation := normalizePickLocation(row[locationCol])
 		combinedKey := normalizedLocation + normalizedProductCode
 
 		// convert quantity to int

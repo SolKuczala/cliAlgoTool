@@ -51,15 +51,6 @@ func parseCliOptions() (string, string, bool, error) {
 	return inputFileName, outputFileName, printToStdout, nil
 }
 
-// func getColumnIndex(header []string, columnName string) (int, error) {
-// 	for i, col := range header {
-// 		if col == columnName {
-// 			return i, nil
-// 		}
-// 	}
-// 	return -1, fmt.Errorf("column not found")
-// }
-
 // saveToFile saves the processed records to the output CSV file
 func saveToFile(file *os.File, data utils.OrderAwareMap) error {
 	writer := csv.NewWriter(file)
@@ -90,29 +81,10 @@ func main() {
 		return
 	}
 
-	//	locationColumnIdx, err := getColumnIndex(records[0], "pick_location")
-	//	if err != nil {
-	//		log.Fatalf("getColumnIndex failed:%v", err)
-	//		return
-	//	}
-	//
-	//	quantityColumnIdx, err := getColumnIndex(records[0], "quantity")
-	//	if err != nil {
-	//		log.Fatalf("getColumnIndex failed:%v", err)
-	//		return
-	//	}
-	//
-
-	//	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records, 1)
-	//	if err != nil {
-	//		log.Fatalf("Failed to merge duplicates")
-	//	}
-	//
-
 	log.Infof("Reading from file %v", inputFileName)
 	openInputFile, err := os.Open(inputFileName)
 	if err != nil {
-		log.Fatalf("OS open failed:%v", err.Error())
+		log.Fatalf("failed to open input file:%v", err.Error())
 		return
 	}
 	defer openInputFile.Close()
@@ -126,7 +98,7 @@ func main() {
 
 	if printToStdout {
 		for _, key := range optimalPathData.GetOrder() {
-			// print the results to stdout in correct order
+			// print the results to stdout ordered
 			if printToStdout {
 				fmt.Printf("%+q\n", optimalPathData.CSVdata[key])
 			}

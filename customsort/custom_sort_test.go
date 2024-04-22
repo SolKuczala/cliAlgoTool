@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"clialgotool/utils"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"testing"
 
@@ -115,6 +116,35 @@ func TestFindOptimalPath(t *testing.T) {
 			assert.Equal(t, tt.want.GetOrder(), got.GetOrder())
 			assert.Equal(t, tt.want.GetHeader(), got.GetHeader())
 			assert.Equal(t, tt.want.CSVdata, got.CSVdata)
+		})
+	}
+}
+
+// test errors
+func TestFindOptimalPathErrors(t *testing.T) {
+	type args struct {
+		input io.Reader
+		skip  int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "invalid input for atoi",
+			args: args{
+				input: bytes.NewReader([]byte("product_code,quantity,pick_location\n12345,1,A 1\n23456,1,A 1\n")),
+				skip:  0,
+			},
+			wantErr: fmt.Errorf("findOptimalPath failed: strconv.Atoi: parsing \"product_code\": invalid syntax"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := csv.NewReader(tt.args.input)
+			_, err := FindOptimalPath(reader, tt.args.skip)
+			assert.EqualError(t, err, tt.wantErr.Error())
 		})
 	}
 }
