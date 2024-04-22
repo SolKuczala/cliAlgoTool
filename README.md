@@ -1,24 +1,37 @@
 # cliAlgoTool
 ## How to run it
-```make run-local```
+```bash
+make run-local
+```
+it will build and run the binary.
+
+### To run tests and benchmarks
+```bash
+make test-local-unit
+make test-local-integration
+make run-benchmark
+```
 
 ### Possible choices for sorting algorithm
-1. Use built in sort(quicksort) algo from golang - is an optimized version of quicksort for v1.22.
+1. Use Golang built in sort(quicksort) algorithm - it has an optimized version of quicksort for v1.22.
 
 2. Use own implementation of sort(quicksort)
 
 ### Possible approaches:
 1. Quicksort, then merge duplicates, then create CSV with new order.
-```tc: o(n log n)(best case) + o(n) + o(n)```
-2. Merge duplicates with the help of a map, then create new CSV, then quicksort ```tc: o(n) + o(n) + o(n log n)(best case)```
-3. Merge duplicates with the help of a map , then quicksort, then create CSV with new order	```tc: o(n) + o(n log n)(best case) + o(n)```
+Time complexity, best case: `o(n log n) + o(n) + o(n)`
+
+2. Merge duplicates with the help of a map, then create new CSV, then quicksort
+Time complexity, best case: `o(n) + o(n) + o(n log n)`
+
+3. Merge duplicates with the help of a map , then quicksort, then create CSV with new order.
+Time complexity, best case: `o(n) + o(n log n) + o(n)`
 
 ### Decision:
-Option ```3```: Because of the time and space complexity and it was easier to implement and understand to me.
-With golang built-in solution, given the time constraint and that is more efficient than my implementation.
+I decided to go for option `3` because the time and space complexity are better and it was easier to implement and reason about.
+
+Of the two sorting algorithm choices I decided to go with golang's built-in quicksort, given the time constraint and the fact that it is more efficient than what my own implementation would be.
 
 ### Considerations
-- I built the algorithm as a specific solution to the CSV given for the sake of time.
-- I needed to remove a trailing comma manually from the CSV in order to be able to parse it; I couldn't find a good solution to normalize the CSV prior to parse it.
-- I used logrus for logs as it's easy to set up
-- I could have use assert pkg, but I wanted to keep it as vanilla as possible. 
+- I built the algorithm as a specific solution to the CSV given for the sake of time. For a production codebase this should be implemented to support changes in the future, like not depending on a specific column arrangement and normalizing the product codes and locations in a more generic way.
+- I had to remove a trailing comma manually from the CSV in order to be able to parse it.

@@ -13,9 +13,9 @@ test-local-integration: build-local
 	diff ./integration/expected_output.csv ./integration/testrun_output.csv
 	rm ./integration/testrun_output.csv
 
-run-docker-test:
+run-docker:
 	docker build . -t test
 	docker run --rm test
 
 run-benchmark:
-	go test -bench=. -benchmem ./...
+	cd customsort/ && go test -bench . -benchmem -count 5 && cd ..

@@ -76,6 +76,7 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 
 	index := 0
 	for {
+		// read the file line by line in order to avoid loading the entire file into memory
 		row, err := input.Read()
 		if err != nil {
 			if err == io.EOF {
@@ -102,7 +103,7 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 			}
 
 			// and skip the first X rows (headers)
-			log.Infof("Skipping row: %+q\n", row)
+			log.Debugf("Skipping row: %+q\n", row)
 			continue
 		}
 
