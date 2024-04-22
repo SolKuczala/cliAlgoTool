@@ -29,6 +29,10 @@ func (m *OrderAwareMap) GetHeader() []string {
 	return m.header
 }
 
+func (m *OrderAwareMap) SetOrder(order []string) {
+	m.order = order
+}
+
 func (m *OrderAwareMap) SetHeader(header []string) {
 	m.header = header
 }

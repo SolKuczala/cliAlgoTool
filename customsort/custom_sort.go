@@ -34,7 +34,6 @@ func normalizeLocation(location string) string {
 		for i, loc := range locationSplit {
 			locationSplit[i] = strings.Trim(loc, " ")
 		}
-
 		// TODO: no se si el primero hace diff
 		if len(locationSplit[0]) < 2 {
 			// add leading spaces to location until it's 2 characters long
@@ -55,7 +54,6 @@ func normalizeLine(line []string) {
 	for i := range line {
 		line[i] = strings.TrimSpace(line[i])
 	}
-
 }
 
 // FindOptimalPath reads the input CSV file and returns a map with the optimal path,
@@ -83,6 +81,7 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 			}
 			return results, fmt.Errorf("failed to read input:%v", err.Error())
 		}
+
 		normalizeLine(row)
 		index++
 		if index <= skip {
@@ -99,6 +98,7 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 					locationCol = i
 				}
 			}
+			// TODO: pass logger in
 			fmt.Printf("Skipping row: %+q\n", row)
 			// skip the first X rows (headers)
 			continue
@@ -127,7 +127,6 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 			}
 		}
 	}
-
 	results.SortKeys()
 	return results, nil
 }
