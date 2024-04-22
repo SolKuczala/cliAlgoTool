@@ -34,13 +34,14 @@ func normalizeLocation(location string) string {
 		for i, loc := range locationSplit {
 			locationSplit[i] = strings.Trim(loc, " ")
 		}
-		// TODO: no se si el primero hace diff
 		if len(locationSplit[0]) < 2 {
 			// add leading spaces to location until it's 2 characters long
+			// this will allow to sort characters in the order of A-AZ
 			locationSplit[0] = strings.Repeat(" ", 2-len(locationSplit[0])) + locationSplit[0]
 		}
 		if len(locationSplit[1]) < 2 {
 			// add leading zeros to location until it's 2 characters long
+			// this will allow to sort numbers in the order of 01-10
 			locationSplit[1] = strings.Repeat("0", 2-len(locationSplit[1])) + locationSplit[1]
 		}
 		return locationSplit[0] + locationSplit[1]

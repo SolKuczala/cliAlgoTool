@@ -20,23 +20,23 @@ func TestFindOptimalPath(t *testing.T) {
 	}
 	want1.SetOrder([]string{" A01012345", " A01023456"})
 
-	want3 := &utils.OrderAwareMap{
+	want2 := &utils.OrderAwareMap{
 		CSVdata: map[string]utils.CSVRow{
 			" A01012345": {ProductCode: "12345", Quantity: 1, PickLocation: "A 1"},
 			" A02023456": {ProductCode: "23456", Quantity: 1, PickLocation: "A 2"},
 		},
 	}
-	want3.SetOrder([]string{" A01012345", " A02023456"})
+	want2.SetOrder([]string{" A01012345", " A02023456"})
 
-	want4 := &utils.OrderAwareMap{
+	want3 := &utils.OrderAwareMap{
 		CSVdata: map[string]utils.CSVRow{
 			" A01012345": {ProductCode: "12345", Quantity: 1, PickLocation: "A 1"},
 			" A01023456": {ProductCode: "23456", Quantity: 1, PickLocation: "A 1"},
 		},
 	}
-	want4.SetOrder([]string{" A01012345", " A01023456"})
+	want3.SetOrder([]string{" A01012345", " A01023456"})
 
-	want5 := &utils.OrderAwareMap{
+	want4 := &utils.OrderAwareMap{
 		CSVdata: map[string]utils.CSVRow{
 			" A01012345": {ProductCode: "12345", Quantity: 1, PickLocation: "A 1"},
 			"AA01056789": {ProductCode: "56789", Quantity: 1, PickLocation: "AA 1"},
@@ -46,12 +46,12 @@ func TestFindOptimalPath(t *testing.T) {
 			"AZ10045678": {ProductCode: "45678", Quantity: 1, PickLocation: "AZ 10"},
 		},
 	}
-	want5.SetOrder([]string{" A01012345", " C09034567", "AA01056789", "AA05023456", "AZ02056789", "AZ10045678"})
+	want4.SetOrder([]string{" A01012345", " C09034567", "AA01056789", "AA05023456", "AZ02056789", "AZ10045678"})
 
-	// push oamts to array to set headers in at once
-	oamts := []*utils.OrderAwareMap{want1, want3, want4, want5}
-	for _, oamt := range oamts {
-		oamt.SetHeader([]string{"product_code", "quantity", "pick_location"})
+	// push wanted to array to set headers in at once
+	wanted := []*utils.OrderAwareMap{want1, want2, want3, want4}
+	for _, orderAwareMap := range wanted {
+		orderAwareMap.SetHeader([]string{"product_code", "quantity", "pick_location"})
 	}
 
 	type args struct {
@@ -81,7 +81,7 @@ func TestFindOptimalPath(t *testing.T) {
 					"product_code,quantity,pick_location\n12345,1,A 1\n23456,1,A 2\n")),
 				skip: 1,
 			},
-			want:    want3,
+			want:    want2,
 			wantErr: false,
 		},
 		{
@@ -91,7 +91,7 @@ func TestFindOptimalPath(t *testing.T) {
 					"product_code,quantity,pick_location\n12345,1,A 1\n23456,1,A 1\n")),
 				skip: 1,
 			},
-			want:    want4,
+			want:    want3,
 			wantErr: false,
 		},
 		{
@@ -101,7 +101,7 @@ func TestFindOptimalPath(t *testing.T) {
 					"product_code,quantity,pick_location\n12345,1,A 1\n23456,1,AA 5\n34567,1,C 9\n45678,1,AZ 10\n56789,1,AA 1\n56789,1,AZ 2\n")),
 				skip: 1,
 			},
-			want:    want5,
+			want:    want4,
 			wantErr: false,
 		},
 	}
