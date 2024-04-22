@@ -6,13 +6,15 @@ import (
 )
 
 type OrderAwareMap struct {
-	order  []string
-	Values map[string]CSVRow
+	order   []string
+	CSVdata map[string]CSVRow
+	header  []string
 }
 
 func (m *OrderAwareMap) SortKeys() {
-	sortedKeys := make([]string, 0, len(m.Values))
-	for key := range m.Values {
+	// creating ordered keys slice
+	sortedKeys := make([]string, 0, len(m.CSVdata))
+	for key := range m.CSVdata {
 		sortedKeys = append(sortedKeys, key)
 	}
 	sort.Strings(sortedKeys)
@@ -23,6 +25,14 @@ func (m *OrderAwareMap) GetOrder() []string {
 	return m.order
 }
 
+func (m *OrderAwareMap) GetHeader() []string {
+	return m.header
+}
+
+func (m *OrderAwareMap) SetHeader(header []string) {
+	m.header = header
+}
+
 func (m OrderAwareMap) String() string {
-	return fmt.Sprintf("order:%v, values:%v", m.order, m.Values)
+	return fmt.Sprintf("order:%v, values:%v", m.order, m.CSVdata)
 }

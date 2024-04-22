@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"clialgotool/customsort"
+	"clialgotool/utils"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,55 +21,28 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 }
 
-func getColumnIndex(header []string, columnName string) (int, error) {
-	for i, col := range header {
-		if col == columnName {
-			return i, nil
-		}
-	}
-	return -1, fmt.Errorf("column not found")
-}
-
-func saveToFile(filename string, records [][]string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		log.Fatalf("Failed to create file:%v", err)
-		return err
-	}
-	defer file.Close()
-
-	// Write the processed records to the output CSV file
-	writer := csv.NewWriter(file)
-	err = writer.WriteAll(records)
-	if err != nil {
-		log.Fatalf("Failed to write:%v", err)
-		return err
-	}
-	return nil
-}
-
+// parseCliOptions initialize the cli tool, parses the command-line options and
+// returns the input and output filenames.
 func parseCliOptions() (string, string, bool, error) {
-	// create CLI
-	// Define command-line flags
+	// define command-line flags
 	log.Info("Initializing cli tool")
 	inputFlag := flag.String("input", "", "Input CSV file")
 	outputFlag := flag.String("output", "", "Output CSV file")
 	printFlag := flag.Bool("print", false, "Print the output CSV file to stdout")
 	flag.Parse()
 
-	// Check if input file is provided
 	if *inputFlag == "" {
-		return "", "", false, fmt.Errorf("Please provide input CSV file using -input flag")
+		return "", "", false, fmt.Errorf("please provide input CSV file using '-input' flag")
 	}
 	inputFileName := *inputFlag
 	outputFileName := *outputFlag
 	printToStdout := *printFlag
 
-	// Set the default output filename if not provided
+	// set the default output filename if not provided
 	if outputFileName == "" {
 		absInputFilePath, err := filepath.Abs(inputFileName)
 		if err != nil {
-			return "", "", false, fmt.Errorf("Failed to determine output file path:%v", err)
+			return "", "", false, fmt.Errorf("failed to determine output file path:%v", err)
 		}
 		inputFilePath := strings.TrimSuffix(absInputFilePath, filepath.Ext(inputFileName))
 		outputFileName = inputFilePath + "_output.csv"
@@ -77,26 +51,42 @@ func parseCliOptions() (string, string, bool, error) {
 	return inputFileName, outputFileName, printToStdout, nil
 }
 
+// func getColumnIndex(header []string, columnName string) (int, error) {
+// 	for i, col := range header {
+// 		if col == columnName {
+// 			return i, nil
+// 		}
+// 	}
+// 	return -1, fmt.Errorf("column not found")
+// }
+
+// saveToFile saves the processed records to the output CSV file
+func saveToFile(file *os.File, data utils.OrderAwareMap) error {
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	var header []string
+	header = append(header, data.GetHeader()...)
+	if err := writer.Write(header); err != nil {
+		return fmt.Errorf("error writing CSV header: %v", err)
+	}
+
+	for _, key := range data.GetOrder() {
+		row := data.CSVdata[key]
+		record := []string{row.ProductCode, fmt.Sprintf("%d", row.Quantity), row.PickLocation}
+		if err := writer.Write(record); err != nil {
+			return fmt.Errorf("failed to write row: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func main() {
-	inputFileName, _, _, err := parseCliOptions()
+	// init cli tool
+	inputFileName, outputFileName, printToStdout, err := parseCliOptions()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Infof("Reading from file %v", inputFileName)
-	// Read input CSV file
-	openInputFile, err := os.Open(inputFileName)
-	if err != nil {
-		log.Fatalf("OS open failed:%v", err)
-		return
-	}
-	defer openInputFile.Close()
-
-	// Parse the input CSV file
-	reader := csv.NewReader(openInputFile)
-	_, err = reader.ReadAll()
-	if err != nil {
-		log.Fatalf("Reader failed:%v", err)
+		log.Fatalf("failed to init and parse cli tool:%v", err.Error())
 		return
 	}
 
@@ -112,58 +102,49 @@ func main() {
 	//		return
 	//	}
 	//
-	//	// call module that processes CSV
-	//	customsort.SortByColumnIdx(locationColumnIdx, records[1:])
-	//
+
 	//	results, err := customsort.MergeDuplicatesAsSums(locationColumnIdx, quantityColumnIdx, records, 1)
 	//	if err != nil {
 	//		log.Fatalf("Failed to merge duplicates")
 	//	}
 	//
-	//	if err = saveToFile(outputFileName, results); err != nil {
-	//		log.Fatalf("Failed to save results")
-	//	}
-	//	log.Infof("Successfully saved results to file %v", outputFileName)
-	//
-	//	if printToStdout {
-	//		for _, result := range results {
-	//			fmt.Printf("%+q\n", result)
-	//		}
-	//	}
 
-	// New version
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
 	log.Infof("Reading from file %v", inputFileName)
-	// Read input CSV file
-	openInputFile, err = os.Open(inputFileName)
+	openInputFile, err := os.Open(inputFileName)
 	if err != nil {
-		log.Fatalf("OS open failed:%v", err)
+		log.Fatalf("OS open failed:%v", err.Error())
 		return
 	}
 	defer openInputFile.Close()
 
-	reader = csv.NewReader(openInputFile)
+	reader := csv.NewReader(openInputFile)
 	reader.FieldsPerRecord = 3
-	data, err := customsort.FindOptimalPath(reader, 1)
+	optimalPathData, err := customsort.FindOptimalPath(reader, 1)
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalf("failed to find optimal path:%v", err.Error())
 	}
 
-	for _, key := range data.GetOrder() {
-		fmt.Printf("%+q\n", data.Values[key])
+	if printToStdout {
+		for _, key := range optimalPathData.GetOrder() {
+			// print the results to stdout in correct order
+			if printToStdout {
+				fmt.Printf("%+q\n", optimalPathData.CSVdata[key])
+			}
+		}
 	}
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
-	log.Info("-----------------")
 
+	// create output file and save results
+	outputFile, err := os.Create(outputFileName)
+	if err != nil {
+		log.Fatalf("failed to create output file:%v", err)
+		return
+	}
+	defer outputFile.Close()
+
+	if err = saveToFile(outputFile, optimalPathData); err != nil {
+		log.Fatalf("failed to save results:%v", err.Error())
+		return
+	}
+
+	log.Infof("Successfully saved results to file %v", outputFileName)
 }
