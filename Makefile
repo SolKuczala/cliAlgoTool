@@ -16,3 +16,6 @@ test-local-integration: build-local
 run-docker-test:
 	docker build . -t test
 	docker run --rm test
+
+run-benchmark:
+	go test -bench=. -benchmem ./...
