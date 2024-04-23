@@ -3,7 +3,22 @@
 ```bash
 make run-local
 ```
-it will build and run the binary.
+It will build and run the binary taking the csv provided to make the output to `csv` folder.
+
+It also prints the output as it has the `-print` option.
+To run it manually, see target in Makefile.
+
+### Usage
+Once the binary is built run:
+
+```bash
+./clialgotool <flag> [path-to-csv-file]
+```
+
+#### Flags:
+- `-input` Takes a path to a CSV to process.
+- `-output` Takes a name of a file to write the output. If it is not provided it will use a default name.
+- `-print` Prints the output to console.
 
 ### To run tests and benchmarks
 ```bash
@@ -13,13 +28,13 @@ make run-benchmark
 ```
 
 #### Dockerfile
-To try the docker build, make sure docker is in your sudoer group.
+To try the docker build target, make sure docker is in your sudoer group.
 This was just and addition to show the usage.
 
 ### Possible choices for sorting algorithm
 1. Use Golang built in sort(quicksort) algorithm - it has an optimized version of quicksort for v1.22.
 
-2. Use own implementation of sort(quicksort)
+2. Use own implementation of sort(quicksort).
 
 ### Possible approaches:
 1. Quicksort, then merge duplicates, then create CSV with new order.
