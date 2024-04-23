@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	// ProductCodeCol is the column index of the product code
+	// productCode is the column index of the product code
 	productCode = "product_code"
-	// QuantityCol is the column index of the quantity
+	// quantity is the column index of the quantity
 	quantity = "quantity"
-	// LocationCol is the column index of the location
+	// pickLocation is the column index of the location
 	pickLocation = "pick_location"
 )
 
@@ -29,7 +29,7 @@ func normalizeProductCode(productCode string) string {
 	return productCode
 }
 
-// normalizePickLocation to 4 characters to be able to separate locations at combination key.
+// normalizePickLocation to 4 characters long to be able sort keys.
 func normalizePickLocation(location string) string {
 	if len(location) < 6 {
 		locationSplit := strings.Split(location, " ")
@@ -91,14 +91,15 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 			results.SetHeader(row)
 
 			for i, col := range row {
-				if col == productCode {
+				switch col {
+				case productCode:
 					productCodeCol = i
-				}
-				if col == quantity {
+				case quantity:
 					quantityCol = i
-				}
-				if col == pickLocation {
+				case pickLocation:
 					locationCol = i
+				default:
+					return results, fmt.Errorf("invalid column name %s", col)
 				}
 			}
 
@@ -115,7 +116,7 @@ func FindOptimalPath(input *csv.Reader, skip int) (utils.OrderAwareMap, error) {
 		// convert quantity to int
 		quantity, err := strconv.Atoi(row[quantityCol])
 		if err != nil {
-			return results, fmt.Errorf("findOptimalPath failed: %v", err)
+			return results, fmt.Errorf("failed to convert str to int: %v", err)
 		}
 		// if the key already exists, add the quantity to the existing value
 		// and update row. Otherwise, create a new row.

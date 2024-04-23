@@ -120,6 +120,7 @@ func TestFindOptimalPath(t *testing.T) {
 	}
 }
 
+// More test cases can be added
 func TestFindOptimalPathErrors(t *testing.T) {
 	type args struct {
 		input io.Reader

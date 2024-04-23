@@ -12,6 +12,10 @@ make test-local-integration
 make run-benchmark
 ```
 
+#### Dockerfile
+To try the docker build, make sure docker is in your sudoer group.
+This was just and addition to show the usage.
+
 ### Possible choices for sorting algorithm
 1. Use Golang built in sort(quicksort) algorithm - it has an optimized version of quicksort for v1.22.
 
